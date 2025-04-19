@@ -25,6 +25,7 @@ class CachedFeatureFlagUseCase implements IFeatureFlagUseCase {
 	async isFeatureEnabled(
 		featureFlagName: string,
 		distinctId: string,
+		ttl = 3600,
 	): Promise<boolean> {
 		try {
 			const cache_key = `feature_flags:${featureFlagName}:${distinctId}`;
@@ -37,7 +38,9 @@ class CachedFeatureFlagUseCase implements IFeatureFlagUseCase {
 				featureFlagName,
 				distinctId,
 			);
-			await this.cache.set(cache_key, value ? "true" : "false");
+			await this.cache.set(cache_key, value ? "true" : "false", {
+				EX: ttl,
+			});
 			return value;
 		} catch (error) {
 			console.error(
